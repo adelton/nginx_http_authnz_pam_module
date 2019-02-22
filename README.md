@@ -55,7 +55,7 @@ If you want to use PAM module as an authentication/authorization provider for Ba
         authnz_pam on;
         authnz_pam_service random-svc;
         authnz_pam_basic on;
-        authnz_pam_name "Basic realm=PAM";
+        authnz_pam_name "PAM authentication";
     }
 
 
@@ -74,7 +74,7 @@ You can also use Basic authentication as a fallback in case of previous authenti
         authnz_pam on;
         authnz_pam_service random-svc;
         authnz_pam_basic on;
-        authnz_pam_name "Basic realm=PAM";
+        authnz_pam_name "PAM authentication";
     }
 
 

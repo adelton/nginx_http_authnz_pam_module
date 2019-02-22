@@ -151,22 +151,35 @@ ngx_module_t ngx_http_authnz_pam_module = {
 };   
 
 
-/* 
- * If authentication credentials are missing, return appropriate response. 
- * Correct status code: 401 Unauthorized
- * WWW-Authenticate header field must be included
- */
-static ngx_int_t ngx_http_authnz_pam_return_www_auth(ngx_http_request_t *r, ngx_str_t *realm)
+/* copied from ngx_http_auth_basic_module.c */
+static ngx_int_t
+ngx_http_auth_basic_set_realm(ngx_http_request_t *r, ngx_str_t *realm)
 {
+    size_t   len;
+    u_char  *basic, *p;
+
     r->headers_out.www_authenticate = ngx_list_push(&r->headers_out.headers);
     if (r->headers_out.www_authenticate == NULL) {
         return NGX_HTTP_INTERNAL_SERVER_ERROR;
     }
 
+    len = sizeof("Basic realm=\"\"") - 1 + realm->len;
+
+    basic = ngx_pnalloc(r->pool, len);
+    if (basic == NULL) {
+        r->headers_out.www_authenticate->hash = 0;
+        r->headers_out.www_authenticate = NULL;
+        return NGX_HTTP_INTERNAL_SERVER_ERROR;
+    }
+
+    p = ngx_cpymem(basic, "Basic realm=\"", sizeof("Basic realm=\"") - 1);
+    p = ngx_cpymem(p, realm->data, realm->len);
+    *p = '"';
+
     r->headers_out.www_authenticate->hash = 1;
-    r->headers_out.www_authenticate->key.len = sizeof("WWW-Authenticate") - 1;
-    r->headers_out.www_authenticate->key.data = (u_char *) "WWW-Authenticate";
-    r->headers_out.www_authenticate->value = *realm;
+    ngx_str_set(&r->headers_out.www_authenticate->key, "WWW-Authenticate");
+    r->headers_out.www_authenticate->value.data = basic;
+    r->headers_out.www_authenticate->value.len = len;
 
     return NGX_HTTP_UNAUTHORIZED;
 }
@@ -224,7 +237,7 @@ static ngx_int_t ngx_http_pam_authenticate(ngx_http_request_t *r, ngx_int_t step
             ret = pam_authenticate(pamh, PAM_DISALLOW_NULL_AUTHTOK);
             if (ret != PAM_SUCCESS) {
                 pam_authnz_log_error("pam_authnz: Authentication failed");
-                return ngx_http_authnz_pam_return_www_auth(r, &loc_conf->name);
+                return ngx_http_auth_basic_set_realm(r, &loc_conf->name);
             }
             r->access_code = NGX_OK;
         }
@@ -298,7 +311,7 @@ static ngx_int_t ngx_http_authnz_pam_handler(ngx_http_request_t *r)
             rc = ngx_http_auth_basic_user(r);
 
             if (rc == NGX_DECLINED) {
-                return ngx_http_authnz_pam_return_www_auth(r, &loc_conf->name);
+                return ngx_http_auth_basic_set_realm(r, &loc_conf->name);
             }
             if (rc == NGX_ERROR) {
                 return NGX_HTTP_INTERNAL_SERVER_ERROR;
