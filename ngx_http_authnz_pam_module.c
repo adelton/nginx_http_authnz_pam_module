@@ -86,6 +86,10 @@ static ngx_int_t ngx_http_authnz_pam_init(ngx_conf_t *cf)
         return NGX_ERROR;
     }
 
+    while (h > (ngx_http_handler_pt *)cmcf->phases[NGX_HTTP_ACCESS_PHASE].handlers.elts) {
+        *h = *(h - 1);
+        h--;
+    }
     *h = ngx_http_authnz_pam_handler;
 
     return NGX_OK;
