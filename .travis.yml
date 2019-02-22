@@ -1,0 +1,31 @@
+language: generic
+
+sudo: required
+
+services:
+- docker
+
+install: true
+
+stages:
+- build-and-test
+
+matrix:
+  include:
+    - stage: build-and-test
+      env: fedora=rawhide
+    - stage: build-and-test
+      env: fedora=latest
+    - stage: build-and-test
+      env: centos=7
+    - stage: build-and-test
+      env: centos=6
+
+before_script:
+- if test -n "$fedora" ; then sed -i "s#^FROM.*#FROM registry.fedoraproject.org/fedora:$fedora#" tests/Dockerfile ; fi
+- if test -n "$centos" ; then sed -i -e "s#^FROM.*#FROM registry.centos.org/centos:$centos#" -e 's/dnf/yum/g' tests/Dockerfile ; fi
+
+script:
+- docker build -t nginx_http_authnz_pam_module -f tests/Dockerfile .
+- docker run --name nginx_http_authnz_pam_module --rm -d nginx_http_authnz_pam_module
+- docker exec nginx_http_authnz_pam_module tests/run.sh

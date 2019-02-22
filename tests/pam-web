@@ -1,0 +1,2 @@
+auth	optional	pam_exec.so debug expose_authtok log=/usr/local/nginx/logs/pam_exec.log /usr/bin/pam-exec
+account	required	pam_exec.so debug log=/usr/local/nginx/logs/pam_exec.log /usr/bin/pam-exec

@@ -1,0 +1,1 @@
+<!--# if expr="$remote_user" -->User <!--# echo var="remote_user" default="" -->.<!--# else -->Not authenticated.<!--# endif -->
