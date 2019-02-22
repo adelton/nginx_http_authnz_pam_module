@@ -8,12 +8,15 @@ This module is still WIP.
 
 Installation
 -------------
-1. Install [nginx](http://wiki.nginx.org/Install).
-1. Clone this module.
-1. Install pam-devel package.
-1. Add the authnz modules through --add-module option. PAM module should be added last. For example:
-
-	./configure --add-module=spnego-http-auth-nginx-module --add-module=nginx_http_authnz_pam_module
+1. Download [nginx source](http://www.nginx.org/en/download.html).
+1. Extract the nginx sources to a directory.
+1. Clone this module to subdirectory `ngx_http_authnz_pam_module` of that nginx source directory.
+1. Install `pam-devel` package.
+1. Change current directory (`cd`) to the nginx source directory.
+1. Configure with the module, make sure it is the last module listed:
+   `./configure --add-module=ngx_http_authnz_pam_module`
+1. Build: `make`
+1. Install: `make install`
 
 
 Configuration
@@ -34,12 +37,12 @@ To use PAM on location /test add following lines into `conf/nginx.conf`:
         satisfy all;
 
         #configuration directives of authentication module (e.g. Kerberos)
-	auth_gss on;
+        auth_gss on;
         auth_gss_keytab /etc/http.keytab;
         auth_gss_realm EXAMPLE.TEST;
         auth_gss_service_name HTTP/test.example.test;
 
-	#configuration directives of PAM module - authorization
+        #configuration directives of PAM module - authorization
         authnz_pam on;
         authnz_pam_service "random-svc";
         authnz_pam_expired_redirect_url "https://auth.example.test/reset_password";
@@ -61,13 +64,13 @@ You can also use Basic authentication as a fallback in case of previous authenti
     location /test3 {
         satisfy any;
 
-	#configuration directives of authentication module (e.g. Kerberos)
+        #configuration directives of authentication module (e.g. Kerberos)
         auth_gss on;
         auth_gss_keytab /etc/http.keytab;
         auth_gss_realm EXAMPLE.TEST;
         auth_gss_service_name HTTP/test.example.test;
 
-	#configuration directives of PAM module - Basic fallback (authn and authz)
+        #configuration directives of PAM module - Basic fallback (authn and authz)
         authnz_pam on;
         authnz_pam_service random-svc;
         authnz_pam_basic on;
