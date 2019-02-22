@@ -220,11 +220,11 @@ static ngx_int_t ngx_http_pam_authenticate(ngx_http_request_t *r, ngx_int_t step
 
     if (ret == PAM_SUCCESS) {
         if (steps & _PAM_STEP_AUTH) {
-            ret = pam_authenticate(pamh, PAM_DISALLOW_NULL_AUTHTOK);
             pam_authnz_debug0("pam_authnz: AUTHENTICATION");
+            ret = pam_authenticate(pamh, PAM_DISALLOW_NULL_AUTHTOK);
             if (ret != PAM_SUCCESS) {
                 pam_authnz_log_error("pam_authnz: Authentication failed");
-                return NGX_HTTP_UNAUTHORIZED;
+                return ngx_http_authnz_pam_return_www_auth(r, &loc_conf->name);
             }
             r->access_code = NGX_OK;
         }
