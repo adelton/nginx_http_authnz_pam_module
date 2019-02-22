@@ -6,8 +6,8 @@ It extends [stogh's PAM module](https://github.com/stogh/ngx_http_auth_pam_modul
 This module is still WIP.
 
 
-Installation
--------------
+Installation (built-in)
+-----------------------
 1. Download [nginx source](http://www.nginx.org/en/download.html).
 1. Extract the nginx sources to a directory.
 1. Clone this module to subdirectory `ngx_http_authnz_pam_module` of that nginx source directory.
@@ -18,9 +18,22 @@ Installation
 1. Build: `make`
 1. Install: `make install`
 
+Installation (dynamically loaded module)
+----------------------------------------
+1. Have extracted nginx source directory ready, matching the nginx version for which you will build the module.
+1. Install `pam-devel` package.
+1. Change current directory (`cd`) to the nginx source directory.
+1. Configure with the path to this module's source directory, for example
+   `./configure --add-dynamic-module=..`
+1. Build the module: `make modules`
+1. Copy the binary module to `modules/` subdirectory of the nginx installation:
+   `cp objs/ngx_http_authnz_pam_module.so /usr/local/nginx/modules/`
 
 Configuration
 -------------
+If you've built the module as dynamically loadable, enable it in the config file with
+* `load_module "modules/ngx_http_authnz_pam_module.so";`
+
 You can set the PAM module through these directives:
 * `authnz_pam on|off`: Default value is `off`
 * `authnz_pam_service`: PAM service name. This directive is required and must contain non-empty string.
